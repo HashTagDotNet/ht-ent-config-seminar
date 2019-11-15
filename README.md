@@ -1,0 +1,1 @@
+# ht-ent-config-seminar
