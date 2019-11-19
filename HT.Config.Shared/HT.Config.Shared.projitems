@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>b1a5ab3a-bb82-489a-99b5-852ce74db70f</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>HT.Config.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\CreateSettingRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\CreateSettingResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\DeleteSettingRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\DeleteSettingResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\UpdateSettingValueResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\UpdateSettingRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\UpdateSettingResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Admin\UpdateSettingValueRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RequestBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ResponseBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SettingDescription.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SettingsServiceModels\SettingsRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SettingsServiceModels\SettingsResponse.cs" />
+  </ItemGroup>
+</Project>
