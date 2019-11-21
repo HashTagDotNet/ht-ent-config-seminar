@@ -9,18 +9,19 @@ using System.Web.Mvc;
 
 namespace demo_app_framework_48.Controllers
 {
-    public class ConfigurationController : Controller
+    public class ControllerBase:Controller
     {
-        public ConfigurationController()
-        {
-            
-        }
+        protected MyAppConfig config=>MyAppGlobals.Config;
+    }
+    public class ConfigurationController : ControllerBase
+    {
+        public ConfigurationController():base(){}
         public ActionResult Index()
         {
             if (!authorizeRequest(this.Request))
             {
                 //return Redirect("~/");
-                return Redirect(MyAppGlobals.Config.NotAuthorizedUrl);
+                return Redirect(config.NotAuthorizedUrl);
             }
 
             var retVal = new Dictionary<string, List<ConfigurationModel>>();

@@ -19,11 +19,12 @@ namespace demo_app_framework_48
         private static RemoteConfigReader __configReader;
         protected void Application_Start()
         {
+            ConfigurationManager.AppSettings.Set("__htconfig:demo:apprecycletoken", Guid.NewGuid().ToString());
             if (__configReader == null)
             {
                 __configReader = new RemoteConfigReader(options=>
                 {
-                    //options.RefreshIntervalMs = 5000;
+                    options.RefreshIntervalMs = 5000;
                     options.OnGetContext = getCustomConfigContextProperties;
                 }).Start();
             }

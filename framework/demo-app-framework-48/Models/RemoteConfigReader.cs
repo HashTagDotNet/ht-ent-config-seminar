@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Web;
@@ -109,22 +110,28 @@ namespace demo_app_framework_48.Models
                         SettingsResponse response = JsonConvert.DeserializeObject<SettingsResponse>(httpResultString);
                         if (response.IsOk)
                         {
-
                             foreach (var setting in response.Settings)
                             {
-                                if (setting.Key.StartsWith("ConnectionStrings:", StringComparison.InvariantCultureIgnoreCase))
+                                var cnIndex = setting.Key.IndexOf("ConnectionStrings:", StringComparison.InvariantCultureIgnoreCase);
+
+                                if (cnIndex >-1)
                                 {
-                                    var xt = ConfigurationManager.ConnectionStrings.IsReadOnly();
+                                    var key = setting.Key.Substring(cnIndex + "ConnectionStrings:".Length); //strip off well known 'ConnectionStrings:' prefix
+                                    ConfigurationManager.ConnectionStrings.SetSetting(key, setting.Value.Value, null);
                                 }
                                 else
                                 {
                                     ConfigurationManager.AppSettings.Set(setting.Value.Key, setting.Value.Value);
                                 }
                             }
+                            // write results to secondary configuration store
                         }
                     }
+                    else
+                    {
+                        // read results from secondary configuration store
+                    }
                 }
-
                 ConfigurationManager.AppSettings.Set("__htconfig:lastloadResult", "OK");
             }
             catch (Exception ex)
@@ -137,6 +144,70 @@ namespace demo_app_framework_48.Models
         private void stopTimer()
         {
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
+        }
+    }
+
+    public static class ConfigurationExtensions
+    {
+        /// <summary>
+        /// Add new connection string to collection
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="connectionString"></param>
+        /// <param name="providerName"></param>
+        public static void AddSetting(this ConnectionStringSettingsCollection connectionStrings, string name, string connectionString, string providerName)
+        {
+            connectionStrings.AddSetting(new ConnectionStringSettings(name, connectionString, providerName));
+        }
+
+        /// <summary>
+        /// Add a new string to collection 
+        /// </summary>
+        /// <param name="setting"></param>
+        public static void AddSetting(this ConnectionStringSettingsCollection connectionStrings, ConnectionStringSettings setting)
+        {
+            var readonlyField = typeof(ConfigurationElementCollection).GetField("bReadOnly", BindingFlags.NonPublic | BindingFlags.Instance);
+            readonlyField.SetValue(connectionStrings, false);
+            connectionStrings.Add(setting);
+            readonlyField.SetValue(connectionStrings, true);
+        }
+
+        /// <summary>
+        /// Clear all exsist keys from collection
+        /// </summary>
+        public static void ClearSettings(this ConnectionStringSettingsCollection connectionStrings)
+        {
+            var readonlyField = typeof(ConfigurationElementCollection).GetField("bReadOnly", BindingFlags.NonPublic | BindingFlags.Instance);
+            readonlyField.SetValue(connectionStrings, false);
+            connectionStrings.Clear();
+            readonlyField.SetValue(connectionStrings, true);
+        }
+
+        public static void SetSetting(this ConnectionStringSettingsCollection connectionStrings, string name, string connectionString, string providerName)
+        {
+            connectionStrings.SetSetting(new ConnectionStringSettings(name, connectionString, providerName));
+        }
+
+        /// <summary>
+        /// Update an existing key in the collection
+        /// </summary>
+        /// <param name="setting"></param>
+        public static void SetSetting(this ConnectionStringSettingsCollection connectionStrings, ConnectionStringSettings setting)
+        {
+            connectionStrings.RemoveSetting(setting.Name);
+            connectionStrings.AddSetting(setting);
+        }
+
+        /// <summary>
+        /// Remove an existing key from collection
+        /// </summary>
+        /// <param name="name"></param>
+        public static void RemoveSetting(this ConnectionStringSettingsCollection connectionStrings, string name)
+        {
+            var readonlyField = typeof(ConfigurationElementCollection).GetField("bReadOnly", BindingFlags.NonPublic | BindingFlags.Instance);
+            readonlyField.SetValue(connectionStrings, false);
+            connectionStrings.Remove(name);
+            readonlyField.SetValue(connectionStrings, true);
         }
 
     }
