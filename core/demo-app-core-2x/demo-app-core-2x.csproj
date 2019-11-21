@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -17,5 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\HT.Config.Library.Core\HT.Config.Library.Core.csproj" />
   </ItemGroup>
+
+
+  <Import Project="..\..\HT.Config.Shared\HT.Config.Shared.projitems" Label="Shared" />
 
 </Project>
