@@ -37,7 +37,7 @@ namespace demo_app_core_2x
                     RemoteConfigContext callerContext = new RemoteConfigContext();
                     settings.Bind("HTConfiguration", callerContext);
 
-                    configBuilder.AddHTConfigurationSource(remoteOptions,callerContext);                    
+                    configBuilder.AddHTConfigurationSource(remoteOptions, callerContext);
                 })
                 .UseStartup<Startup>();
     }
@@ -46,16 +46,29 @@ namespace demo_app_core_2x
     {
         public static IConfigurationBuilder AddHTConfigurationSource(this IConfigurationBuilder configBuilder, RemoteConfigOptions options, RemoteConfigContext context)
         {
-            configBuilder.Sources.Add(new HTConfigurationSource(options,context));
+            configBuilder.Sources.Add(new HTConfigurationSource(options, context));
             return configBuilder;
         }
+
+        public static IDictionary<string, string> Set(this IDictionary<string, string> target, string key, string value)
+        {
+            if (target.ContainsKey(key))
+            {
+                target[key] = value;
+            }
+            else
+            {
+                target.Add(key, value);
+            }
+            return target;
+        }
     }
-    public class HTConfigurationSource:IConfigurationSource
-    {       
+    public class HTConfigurationSource : IConfigurationSource
+    {
         private RemoteConfigOptions _options;
         private RemoteConfigContext _context;
 
-        
+
         public HTConfigurationSource(RemoteConfigOptions options, RemoteConfigContext context)
         {
             this._options = options;
@@ -66,11 +79,11 @@ namespace demo_app_core_2x
         {
             return new HTConfigurationProvider(_options, _context);
         }
-        
+
     }
     public class HTConfigurationProvider : ConfigurationProvider
     {
-        
+
         private RemoteConfigOptions _options;
         private RemoteConfigContext _context;
         private Timer _timer;
@@ -79,13 +92,13 @@ namespace demo_app_core_2x
             this._options = options;
             this._context = context;
             _timer = new Timer(onLoadConfigurationTimer, null, Timeout.Infinite, Timeout.Infinite);
-    }
+        }
 
         public override void Load()
         {
             loadConfiguration();
-            //startTimer();
-           
+            startTimer();
+
         }
         private void onLoadConfigurationTimer(object state)
         {
@@ -100,17 +113,18 @@ namespace demo_app_core_2x
         }
         private void startTimer()
         {
-           // ConfigurationManager.AppSettings.Set("__htconfig:nextloadtime", DateTimeOffset.Now.AddMilliseconds(_options.RefreshIntervalMs).ToString());
+            Data.Set("HTConfiguration:nextloadtime", DateTimeOffset.Now.AddMilliseconds(_options.RefreshIntervalMs).ToString());
             _timer.Change(_options.RefreshIntervalMs, _options.RefreshIntervalMs);
         }
         private void loadConfiguration()
         {
-            var ctx = new RemoteConfigContext();
+            var ctx = _context;
             try
             {
                 _options?.OnGetContext?.Invoke(ctx);
-                //ConfigurationManager.AppSettings.Set("__htconfig:lastloadtime", DateTimeOffset.Now.ToString());
-                //ConfigurationManager.AppSettings.Set("__htconfig:lastloadContext", JsonConvert.SerializeObject(ctx));
+
+                Data.Set("HTConfiguration:lastloadtime", DateTimeOffset.Now.ToString());
+                Data.Set("HTConfiguration:lastloadContext", JsonConvert.SerializeObject(ctx));
 
                 using (var httpClient = new HttpClient())
                 {
@@ -136,6 +150,7 @@ namespace demo_app_core_2x
                         {
                             foreach (var setting in response.Settings)
                             {
+                                // TODO need to add delete detection here
                                 if (Data.ContainsKey(setting.Value.Key))
                                 {
                                     Data[setting.Value.Key] = setting.Value.Value;
@@ -153,11 +168,15 @@ namespace demo_app_core_2x
                         // read results from secondary configuration store
                     }
                 }
-//                ConfigurationManager.AppSettings.Set("__htconfig:lastloadResult", "OK");
+                Data.Set("HTConfiguration:lastloadResult", "OK");
             }
             catch (Exception ex)
             {
-              //  ConfigurationManager.AppSettings.Set("__htconfig:lastloadResult", JsonConvert.SerializeObject(ex));
+                Data.Set("HTConfiguration:lastloadResult", JsonConvert.SerializeObject(ex, new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Serialize
+                }
+                ));
                 _options.OnError?.Invoke(ex);
             }
         }
@@ -166,6 +185,7 @@ namespace demo_app_core_2x
         {
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
+
     }
 
 }
