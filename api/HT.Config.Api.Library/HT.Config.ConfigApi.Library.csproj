@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.30" />
+    <PackageReference Include="Dapper.Contrib" Version="2.0.30" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />
+  </ItemGroup>
+
+  
+
+  <Import Project="..\..\HT.Config.Shared\HT.Config.Shared.projitems" Label="Shared" />
+
+</Project>
